@@ -1,8 +1,14 @@
 -- satus.lua
--- A dwmstatus replacement script.
+-- Main script.
 
 del = ' | ' -- delimeter
 if arg[1] ~= nil then del = arg[1] end
+
+--[[
+   TODO: Encapsulate functions below to its own class.
+   The main idea behind this is to allow concepts like inheritance to
+   extend functionality of the program later. Trust me, I have a plan.
+--]]
 
 function time(format)
    if format == "" then return os.date() end

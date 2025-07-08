@@ -1,0 +1,9 @@
+Bar is a light-weight status bar in Lua for Sway/i3 window managers
+and alike. Men at work; this project is not ready for its v1.0 release
+yet. Eventually, it's meant to be modular. It means that users will be
+able to attach their own "extensions". I haven't really put much
+thought into how it will be achieved but for now I guess either with
+another Lua script or a script of its own only for Bar. There is not
+much you can possibly do with a status bar, so I consider a scripting
+language of its own a possibility, not to mention the powerful
+capabilities of Lua which make this very light anyway.

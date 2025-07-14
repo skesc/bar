@@ -23,16 +23,16 @@ function battery()
    --    % charged        (pcharge)
    local bat_info = { }
 
-   charge_now = io.input('/sys/class/power_supply/BAT0/charge_now')
+   local charge_now = io.input('/sys/class/power_supply/BAT0/charge_now')
    bat_info.charge_now = tonumber(io.read())
    io.close(charge_now)
    
-   charge_max = io.input('/sys/class/power_supply/BAT0/charge_full')
+   local charge_max = io.input('/sys/class/power_supply/BAT0/charge_full')
    bat_info.charge_max = tonumber(io.read())
    io.close(charge_max)
    
-   bat_status = io.input('/sys/class/power_supply/BAT0/status')
-   status = io.read()
+   local bat_status = io.input('/sys/class/power_supply/BAT0/status')
+   local status = io.read()
    if status == "Not charging" then bat_info.charging = false
    elseif status == "Charging" then bat_info.charging = true
    end
@@ -46,7 +46,6 @@ function uptime() -- returns uptime in minutes
    local proc_file = io.input('/proc/uptime')
    t = io.read() -- TODO: implement error handling
    _, _, uptime_sec = string.find(t, '(%d+)')
-   uptime_sec = nil
    if not uptime_sec then return -1 end
    io.close(proc_file)
    return uptime_sec // 60
@@ -62,43 +61,52 @@ function memory()
    local mem_info  = { }
    local proc_file = io.input('/proc/meminfo') -- TODO: implement error handling
 
-   t = io.read() -- TODO: implement error handling
-   _, _, mem_info.total = string.find(t, ':%s*(%d+)')
+   t = io.read("*all") -- TODO: implement error handling
+   _, _, mem_info.total = string.find(t, 'MemTotal:%s*(%d+)')
    if not mem_info.total then
       print("proc error: unable to parse meminfo.")
       return
    end
 
-   t = io.read()
-   _, _, mem_info.free = string.find(t, ':%s*(%d+)')
+   _, _, mem_info.free = string.find(t, 'MemAvailable:%s*(%d+)')
    if not mem_info.free then
-      print("proc error: unable to parse meminfo.")
-      return
-   end
-
-   t = io.read()
-   _, _, mem_info.avail = string.find(t, ':%s*(%d+)')
-   if not mem_info.avail then
       print("proc error: unable to parse meminfo.")
       return
    end
 
    io.close(proc_file)
 
-   mem_info.pfree = mem_info.free / mem_info.avail * 100
+   mem_info.pfree = mem_info.free / mem_info.total * 100
    mem_info.pused = 100 - mem_info.pfree
    return mem_info
 end
 
-local bar = {
-   string.format('RAM %.2f%%', memory().pused),
-   string.format('BAT %.2f%%', battery().pcharge),
-   time('%a %d %Y - %b %I:%M%p')
-}
-
-out = ''
-for _, val in ipairs(bar) do
-   out = out .. del .. val
+function random_number(length)
+   return math.ceil(math.pow(10, length) * math.random())
 end
 
-print (out)
+function status_out()
+   local bat_info = battery()
+   local bar = {
+      string.format('%.4d', random_number(4)),
+      string.format('RAM %.2f%%', memory().pused),
+      string.format('BAT %.2f%%', bat_info.pcharge) .. (bat_info.charging and '+' or '-'),
+      string.format('UP %d mins', uptime()),
+      time('%a %d %b %Y - %I:%M%p')
+   }
+
+   local out = ''
+   for _, val in ipairs(bar) do
+      out = out .. del .. val
+   end
+
+   return out .. del
+end
+
+print (status_out())
+
+-- main loop
+while true do
+   print (status_out())
+   os.execute('sleep ' .. 5)
+end

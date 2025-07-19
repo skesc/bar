@@ -5,7 +5,7 @@ del = ' | ' -- delimeter
 if arg[1] ~= nil then del = arg[1] end
 
 --[[
-   TODO: Encapsulate functions below to its own class.
+   TODO: Encapsulate functions into their own class.
    The main idea behind this is to allow concepts like inheritance to
    extend functionality of the program later. Trust me, I have a plan.
 --]]
